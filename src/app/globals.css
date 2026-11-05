@@ -1,0 +1,207 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 13% 97%;
+    /* Gris Claro #F3F4F6 */
+    --foreground: 222 47% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 225 73% 45%;
+    /* Azul Principal #1A4ACD */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 240 5% 96%;
+    /* Aumenta contraste en light mode (texto secundario) */
+    --muted-foreground: 240 5% 28%;
+    --accent: 195 100% 47%;
+    /* Azul Acento #00AEEF — texto claro sobre acento sólido (menús, calendario, etc.) */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 225 30% 82%;
+    --input: 225 30% 82%;
+    --ring: 195 100% 47%;
+    --chart-1: 195 70% 43%;
+    --chart-2: 225 73% 45%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --sidebar-background: 225 73% 45%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 195 100% 47%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 225 73% 50%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 225 73% 50%;
+    --sidebar-ring: 195 100% 47%;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+    --ring-focus: 0 0 0 2px #ffffff, 0 0 0 4px #1a7fc1;
+
+    --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', 'Courier New', monospace;
+
+    /* Layout. --sidebar-width y --sidebar-width-collapsed reflejan SIDEBAR_WIDTH /
+       SIDEBAR_WIDTH_ICON de components/ui/sidebar.tsx, que es la fuente que gana en
+       runtime (sidebar.tsx:154 sobrescribe estas variables via inline style). */
+    --sidebar-width: 16rem;
+    --sidebar-width-collapsed: 5rem;
+    --topbar-height: 56px;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 0 0% 98%;
+    --card: 222 47% 15%;
+    --card-foreground: 0 0% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 195 100% 47%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 222 47% 22%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 195 100% 47%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 222 47% 22%;
+    --input: 222 47% 22%;
+    --ring: 195 100% 50%;
+    --chart-1: 195 70% 43%;
+    --chart-2: 225 73% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 195 100% 47%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 222 47% 15%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 222 47% 15%;
+    --sidebar-ring: 195 100% 50%;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7);
+
+    --ring-focus: 0 0 0 2px #080f1a, 0 0 0 4px #1a7fc1;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+
+  /*
+   * Contraste en modo claro: los botones shadcn `outline` y `ghost` ya no usan
+   * `hover:text-accent-foreground` (casi blanco) junto con fondos que a menudo
+   * se sobreescriben a tintes muy claros (`hover:bg-primary/5`, etc.), lo que
+   * dejaba el texto ilegible. Esos variantes usan `hover:bg-muted` + `hover:text-foreground`
+   * en `components/ui/button.tsx`. `--accent` / `--accent-foreground` se reservan
+   * para superficies con acento sólido (menús, calendario, toggle activo).
+   */
+
+  /* Focus visible global */
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+  }
+}
+
+@layer utilities {
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float-slow,
+    .animate-float-medium,
+    .animate-float-fast,
+    .animate-float,
+    .animate-float-delayed,
+    .animate-drift {
+      animation: none !important;
+    }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/5 rounded-full hover:bg-white/10 transition-colors;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar,
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Animation Delays */
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+}
+
+/* Glassmorphism Global Overrides */
+.glass-border {
+  @apply border border-white/10;
+}
+
+.glass-bg {
+  @apply bg-white/5 backdrop-blur-xl;
+}
+
+/* Fix for react-day-picker v9 button clicks */
+.rdp-day button,
+.rdp button[name="day"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.rdp-day {
+  pointer-events: auto !important;
+}
