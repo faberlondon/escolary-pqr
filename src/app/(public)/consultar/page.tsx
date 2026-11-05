@@ -31,7 +31,7 @@ export default function ConsultarPage() {
               id="numero"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="IEWE-2026-PET-000009"
+              placeholder="IEWS-2026-PET-000009"
               aria-label="Número de radicado"
               className="font-mono text-base uppercase sm:text-sm"
             />

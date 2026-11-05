@@ -7,7 +7,7 @@ import { ventanillaReducer, type VentanillaAction, type VentanillaState } from "
 import { seedRadicados, seedSurveys } from "@/lib/ventanilla/seed";
 import type { Channel, Radicado, RadicarFormValues } from "@/lib/ventanilla/types";
 
-const STORAGE_KEY = "ventanilla-demo-v2";
+const STORAGE_KEY = "ventanilla-demo-v3";
 export const CURRENT_USER = { name: "Inocencio Coronado", role: "Coordinador" } as const;
 
 interface VentanillaContextValue {

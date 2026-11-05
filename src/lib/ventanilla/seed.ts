@@ -99,7 +99,7 @@ const SPECS: SeedSpec[] = [
     extra: {
       subject: "Acta reunión de área — octubre", area: "Coordinación académica", documentType: "Acta de reunión",
       description: "Acta de la reunión del área de matemáticas con compromisos del cuarto periodo.",
-      requester: { name: "Luis Pérez", role: "docente", email: "lperez@iewe.edu.co", detail: "Docente · Matemáticas", anonymous: false },
+      requester: { name: "Luis Pérez", role: "docente", email: "lperez@iews.edu.co", detail: "Docente · Matemáticas", anonymous: false },
       attachments: [{ name: "acta_area_matematicas_oct.pdf", sizeBytes: 1_258_291, sha256: fakeHash("acta") }],
     },
   },
@@ -108,7 +108,7 @@ const SPECS: SeedSpec[] = [
     extra: {
       lateDelivery: true, subject: "Planillas de asistencia periodo 4", area: "Coordinación académica", documentType: "Planilla de asistencia",
       description: "Planillas de asistencia del grado 3°B, semanas 33 a 38.",
-      requester: { name: "Ana Díaz", role: "docente", email: "adiaz@iewe.edu.co", detail: "Docente · 3°B", anonymous: false },
+      requester: { name: "Ana Díaz", role: "docente", email: "adiaz@iews.edu.co", detail: "Docente · 3°B", anonymous: false },
       attachments: [{ name: "asistencia_3B_p4.xlsx", sizeBytes: 88_064, sha256: fakeHash("asis") }],
     },
     events: [{ type: "accepted", actor: COORD, detail: "Recibido conforme", hoursAfter: 22 }],
@@ -126,7 +126,7 @@ const SPECS: SeedSpec[] = [
     extra: {
       subject: "Evidencias proyecto ambiental", area: "Coordinación académica", documentType: "Evidencias de trabajo",
       description: "Registro fotográfico y bitácora del proyecto ambiental escolar (PRAE).",
-      requester: { name: "Jorge Mena", role: "docente", email: "jmena@iewe.edu.co", detail: "Docente · Sociales", anonymous: false },
+      requester: { name: "Jorge Mena", role: "docente", email: "jmena@iews.edu.co", detail: "Docente · Sociales", anonymous: false },
       attachments: [{ name: "evidencias_prae.zip.pdf", sizeBytes: 3_670_016, sha256: fakeHash("prae") }],
     },
     events: [{ type: "returned", actor: COORD, detail: "Falta la bitácora firmada por los estudiantes líderes.", hoursAfter: 26 }],

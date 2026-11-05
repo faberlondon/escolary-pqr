@@ -19,7 +19,7 @@ Demo navegable del módulo de **radicación de documentos, PQRSF y encuestas** p
 
 ## Reglas implementadas
 
-- Consecutivo `IEWE-AAAA-TIPO-000001` por tipología y año.
+- Consecutivo `IEWS-AAAA-TIPO-000001` por tipología y año.
 - Plazos en días hábiles (Ley 1755 de 2015): 15 general, 10 documentos/información, 30 consultas; corte 5:00 p. m.; festivos de Colombia calculados con Ley Emiliani.
 - Prórroga motivada hasta el doble del término.
 - SHA-256 real de cada adjunto y del registro (Web Crypto).

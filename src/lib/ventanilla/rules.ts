@@ -2,8 +2,8 @@ import { businessDaysUntil, civilKey, computeDueDate, parseCivil } from "./busin
 import type { PetitionSubtype, Radicado, RadicadoKind, RadicadoStatus } from "./types";
 
 export const SCHOOL = {
-  name: "I.E. Willias Enjavinov",
-  acronym: "IEWE",
+  name: "Institución Educativa Wiwa Shenzhawimaku",
+  acronym: "IEWS",
   campus: "Sede principal",
 } as const;
 
