@@ -11,14 +11,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DeadlineText, StatusBadge } from "@/components/ventanilla/status-badge";
 import { deadlineState, isOpen, isPendingReview } from "@/lib/ventanilla/rules";
-import { KIND_LABELS } from "@/lib/ventanilla/types";
+import { KIND_LABELS, RADICADO_KINDS } from "@/lib/ventanilla/types";
 import type { Radicado } from "@/lib/ventanilla/types";
 
 type Scope = "todos" | "pqrsf" | "documentos";
 type StatusFilter = "todos" | "abiertos" | "vencidos" | "finalizados";
 
-function matches(r: Radicado, scope: Scope, status: StatusFilter, query: string, now: Date): boolean {
+interface Filters {
+  scope: Scope;
+  status: StatusFilter;
+  area: string;
+  kind: string;
+  query: string;
+}
+
+function matches(r: Radicado, { scope, status, area, kind, query }: Filters, now: Date): boolean {
   if (scope === "pqrsf" && r.kind === "DOC") return false;
+  if (area !== "todas" && r.area !== area && r.assignedArea !== area) return false;
+  if (kind !== "todos" && r.kind !== kind) return false;
   if (scope === "documentos" && r.kind !== "DOC") return false;
   const open = isOpen(r) || isPendingReview(r);
   if (status === "abiertos" && !open) return false;
@@ -26,15 +36,17 @@ function matches(r: Radicado, scope: Scope, status: StatusFilter, query: string,
   if (status === "vencidos" && deadlineState(r, now).state !== "overdue") return false;
   if (!query) return true;
   const q = query.toLowerCase();
-  return [r.number, r.subject, r.requester.name].some((v) => v.toLowerCase().includes(q));
+  return [r.number, r.subject, r.requester.name, r.assignee ?? ""].some((v) => v.toLowerCase().includes(q));
 }
 
-export function InboxTable({ radicados, now }: { radicados: readonly Radicado[]; now: Date }) {
+export function InboxTable({ radicados, areas, now }: { radicados: readonly Radicado[]; areas: readonly string[]; now: Date }) {
   const router = useRouter();
   const [scope, setScope] = React.useState<Scope>("todos");
   const [status, setStatus] = React.useState<StatusFilter>("todos");
+  const [area, setArea] = React.useState("todas");
+  const [kind, setKind] = React.useState("todos");
   const [query, setQuery] = React.useState("");
-  const rows = radicados.filter((r) => matches(r, scope, status, query.trim(), now));
+  const rows = radicados.filter((r) => matches(r, { scope, status, area, kind, query: query.trim() }, now));
 
   return (
     <Card className="overflow-hidden rounded-2xl">
@@ -52,7 +64,7 @@ export function InboxTable({ radicados, now }: { radicados: readonly Radicado[];
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Radicado, asunto o nombre"
+              placeholder="Radicado, asunto, radicante o responsable"
               aria-label="Buscar radicados"
               className="pl-9"
             />
@@ -66,6 +78,32 @@ export function InboxTable({ radicados, now }: { radicados: readonly Radicado[];
               <SelectItem value="abiertos">Abiertos</SelectItem>
               <SelectItem value="vencidos">Vencidos</SelectItem>
               <SelectItem value="finalizados">Finalizados</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={kind} onValueChange={setKind}>
+            <SelectTrigger className="w-36" aria-label="Filtrar por tipo">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos los tipos</SelectItem>
+              {RADICADO_KINDS.map((k) => (
+                <SelectItem key={k} value={k}>
+                  {KIND_LABELS[k]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={area} onValueChange={setArea}>
+            <SelectTrigger className="w-52" aria-label="Filtrar por área">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas las áreas</SelectItem>
+              {areas.map((a) => (
+                <SelectItem key={a} value={a}>
+                  {a}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -105,7 +143,10 @@ export function InboxTable({ radicados, now }: { radicados: readonly Radicado[];
                   </TableCell>
                   <TableCell>
                     <p className="whitespace-nowrap font-semibold">{r.requester.name}</p>
-                    <p className="whitespace-nowrap text-xs text-muted-foreground">{r.requester.detail ?? "Sin identificar"}</p>
+                    <p className="whitespace-nowrap text-xs text-muted-foreground">
+                      {r.requester.detail ?? "Sin identificar"}
+                      {r.assignee ? ` · ${r.assignee}` : ""}
+                    </p>
                   </TableCell>
                   <TableCell className="min-w-48">
                     <span className="inline-flex items-center gap-1.5">

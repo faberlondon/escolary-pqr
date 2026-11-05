@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Check, Copy, Download, RotateCcw } from "lucide-react";
 
+import { useVentanilla } from "@/components/providers/ventanilla-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { downloadReceiptPdf } from "@/lib/ventanilla/receipt-pdf";
@@ -15,6 +16,7 @@ interface ReceiptCardProps {
 }
 
 export function ReceiptCard({ radicado, onAnother }: ReceiptCardProps) {
+  const { state } = useVentanilla();
   const [copied, setCopied] = React.useState(false);
 
   const copy = async () => {
@@ -38,7 +40,7 @@ export function ReceiptCard({ radicado, onAnother }: ReceiptCardProps) {
           <p className="text-sm text-muted-foreground">
             {radicado.requester.anonymous
               ? "Guarda este número: es la única forma de consultar tu radicado anónimo."
-              : `Enviamos el acuse a ${radicado.requester.email ?? "tu correo"} y por WhatsApp.`}
+              : `Enviamos el acuse a ${radicado.requester.email ?? "tu correo"}${radicado.requester.phone ? " y por WhatsApp" : ""}.`}
           </p>
         </div>
         <button
@@ -67,7 +69,7 @@ export function ReceiptCard({ radicado, onAnother }: ReceiptCardProps) {
           Huella del registro (SHA-256): {radicado.recordHash}
         </p>
         <div className="flex flex-wrap justify-center gap-2">
-          <Button variant="outline" onClick={() => downloadReceiptPdf(radicado)}>
+          <Button variant="outline" onClick={() => downloadReceiptPdf(radicado, state.config.ackTemplate)}>
             <Download className="size-4" />
             Descargar acuse PDF
           </Button>

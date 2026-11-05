@@ -4,17 +4,17 @@ import { NewSurveyDialog } from "@/components/encuestas/new-survey-dialog";
 import { SurveyCard } from "@/components/encuestas/survey-card";
 import { useVentanilla } from "@/components/providers/ventanilla-provider";
 import { PageHeader } from "@/components/shell/page-header";
-import { PageSkeleton } from "@/components/shell/page-skeleton";
+import { RoleGate } from "@/components/shell/role-gate";
+import { canManageSurveys } from "@/lib/ventanilla/users";
 
-export default function SurveysPage() {
-  const { state, ready } = useVentanilla();
-  if (!ready) return <PageSkeleton />;
+function SurveysContent() {
+  const { state } = useVentanilla();
 
   return (
     <div className="space-y-8 duration-500 animate-in fade-in">
       <PageHeader
         title="Encuestas"
-        description="Mida la satisfacción con NPS y CSAT por web, WhatsApp o tablet en sitio."
+        description="NPS, CSAT y preguntas cerradas o abiertas por web, WhatsApp, tablet en sitio o captura física."
         actions={<NewSurveyDialog />}
       />
       <div className="@container">
@@ -25,5 +25,13 @@ export default function SurveysPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SurveysPage() {
+  return (
+    <RoleGate allow={canManageSurveys}>
+      <SurveysContent />
+    </RoleGate>
   );
 }

@@ -6,17 +6,18 @@ import { FileText, UploadCloud, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/ventanilla/rules";
-import { ACCEPTED_FILE_TYPES, MAX_FILE_BYTES } from "@/lib/ventanilla/types";
 
 interface FileDropProps {
   files: File[];
   onChange: (files: File[]) => void;
   onReject: (message: string) => void;
+  /** Formatos permitidos, p. ej. ".pdf,.docx" (configurables, UC-ENC-01). */
+  accept: string;
+  maxMb: number;
 }
 
-const ALLOWED = ACCEPTED_FILE_TYPES.split(",");
-
-export function FileDrop({ files, onChange, onReject }: FileDropProps) {
+export function FileDrop({ files, onChange, onReject, accept, maxMb }: FileDropProps) {
+  const allowed = accept.split(",").map((x) => x.trim().toLowerCase());
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = React.useState(false);
 
@@ -26,8 +27,8 @@ export function FileDrop({ files, onChange, onReject }: FileDropProps) {
     for (const f of Array.from(list)) {
       const ext = `.${f.name.split(".").pop()?.toLowerCase() ?? ""}`;
       // A1: archivo inválido se rechaza antes de radicar; no consume consecutivo.
-      if (!ALLOWED.includes(ext)) onReject(`${f.name}: formato no permitido`);
-      else if (f.size > MAX_FILE_BYTES) onReject(`${f.name}: supera los 10 MB`);
+      if (!allowed.includes(ext)) onReject(`${f.name}: formato no permitido`);
+      else if (f.size > maxMb * 1024 * 1024) onReject(`${f.name}: supera los ${maxMb} MB`);
       else accepted.push(f);
     }
     onChange([...files, ...accepted]);
@@ -56,13 +57,13 @@ export function FileDrop({ files, onChange, onReject }: FileDropProps) {
         <button type="button" className="font-semibold text-primary hover:underline" onClick={() => inputRef.current?.click()}>
           selecciónalos
         </button>
-        <p className="mt-1 text-xs">PDF, Word, Excel o imagen · máximo 10 MB por archivo</p>
+        <p className="mt-1 text-xs">{accept.replaceAll(".", "").toUpperCase().split(",").join(", ")} · máximo {maxMb} MB por archivo</p>
         <input
           ref={inputRef}
           id="attachments"
           type="file"
           multiple
-          accept={ACCEPTED_FILE_TYPES}
+          accept={accept}
           className="sr-only"
           onChange={(e) => {
             add(e.target.files);

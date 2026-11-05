@@ -1,14 +1,22 @@
 import { utils, writeFile } from "xlsx";
 
 import { formatDateTime } from "./rules";
-import type { Survey } from "./surveys";
+import { formatAnswer, SURVEY_CHANNEL_LABELS, type Survey } from "./surveys";
 
-/** Exporta las respuestas sin datos personales; en anónimas no hay nada que vincular (RN-10). */
+/**
+ * Exporta las respuestas sin datos personales. En anónimas no hay nada que vincular (RN-10):
+ * los enlaces personales usados se guardan aparte y no salen en el archivo.
+ */
 export function exportSurveyXlsx(survey: Survey): void {
   const rows = survey.responses.map((r, i) => {
-    const row: Record<string, string | number> = { "#": i + 1, Fecha: formatDateTime(r.at) };
-    for (const q of survey.questions) row[q.text] = r.answers[q.id] ?? "";
+    const row: Record<string, string | number> = {
+      "#": i + 1,
+      Fecha: formatDateTime(r.at),
+      Canal: r.channel ? SURVEY_CHANNEL_LABELS[r.channel] : "",
+    };
+    for (const q of survey.questions) row[q.text] = formatAnswer(r.answers[q.id]);
     if (r.comment) row.Comentario = r.comment;
+    if (r.radicado) row["Radicado PQRSF"] = r.radicado;
     return row;
   });
   const book = utils.book_new();

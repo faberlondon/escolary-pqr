@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Download } from "lucide-react";
@@ -13,21 +14,30 @@ import { DetailActions } from "@/components/ventanilla/detail-actions";
 import { DetailSummary } from "@/components/ventanilla/detail-summary";
 import { EventTimeline } from "@/components/ventanilla/event-timeline";
 import { ResponseCard } from "@/components/ventanilla/response-card";
-import { DeadlineText, StatusBadge } from "@/components/ventanilla/status-badge";
+import { DeadlineText, Pill, StatusBadge } from "@/components/ventanilla/status-badge";
 import { downloadReceiptPdf } from "@/lib/ventanilla/receipt-pdf";
 import { formatDateTime } from "@/lib/ventanilla/rules";
 import { CHANNEL_LABELS, KIND_LABELS } from "@/lib/ventanilla/types";
+import { canSee } from "@/lib/ventanilla/users";
 
 export default function RadicadoDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { state, ready } = useVentanilla();
-  if (!ready) return <PageSkeleton />;
+  const { state, ready, user, log } = useVentanilla();
   const radicado = state.radicados.find((r) => r.id === id);
+  const visible = radicado ? canSee(user, radicado) : false;
+  const number = radicado?.number;
 
-  if (!radicado) {
+  // RN-12: cada consulta del radicado queda en la bitácora.
+  React.useEffect(() => {
+    if (ready && number && visible) log("Ver radicado", number);
+  }, [ready, number, visible, user.id, log]);
+
+  if (!ready) return <PageSkeleton />;
+
+  if (!radicado || !visible) {
     return (
       <div className="space-y-4">
-        <p className="text-lg font-semibold">No encontramos ese radicado.</p>
+        <p className="text-lg font-semibold">{radicado ? "No tienes acceso a este radicado." : "No encontramos ese radicado."}</p>
         <Button asChild variant="outline">
           <Link href="/ventanilla">Volver a la bandeja</Link>
         </Button>
@@ -49,6 +59,7 @@ export default function RadicadoDetailPage() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-sm font-medium text-primary">{radicado.number}</span>
             <StatusBadge radicado={radicado} now={now} />
+            {radicado.lateDelivery ? <Pill tone="warning">Extemporáneo</Pill> : null}
             <DeadlineText radicado={radicado} now={now} />
           </div>
         }
@@ -65,13 +76,14 @@ export default function RadicadoDetailPage() {
           <Card className="h-fit rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-lg">Trazabilidad</CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => downloadReceiptPdf(radicado)}>
+              <Button variant="ghost" size="sm" onClick={() => downloadReceiptPdf(radicado, state.config.ackTemplate)}>
                 <Download className="size-4" />
                 Acuse
               </Button>
             </CardHeader>
             <CardContent>
-              <EventTimeline events={radicado.events} />
+              {/* El docente ve su propio radicado sin las notas internas (RN-08). */}
+              <EventTimeline events={user.role === "docente" ? radicado.events.filter((e) => !e.internal) : radicado.events} />
             </CardContent>
           </Card>
         </div>

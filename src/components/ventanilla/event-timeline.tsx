@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarClock, CheckCircle2, Inbox, Lock, MailCheck, PenLine, Reply, Undo2, UserCheck } from "lucide-react";
+import { AlertTriangle, Ban, BellRing, CalendarClock, CheckCircle2, Forward, HelpCircle, Inbox, Lock, MailCheck, MessageSquarePlus, PenLine, Reply, Undo2, UserCheck } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/ventanilla/rules";
@@ -7,6 +7,11 @@ import type { EventType, RadicadoEvent } from "@/lib/ventanilla/types";
 const META: Record<EventType, { label: string; icon: typeof Inbox; tone: string }> = {
   radicated: { label: "Radicado", icon: Inbox, tone: "bg-primary/10 text-primary" },
   ack_sent: { label: "Acuse de recibo", icon: MailCheck, tone: "bg-primary/10 text-primary" },
+  area_notified: { label: "Área notificada", icon: BellRing, tone: "bg-muted text-muted-foreground" },
+  info_requested: { label: "Información solicitada", icon: HelpCircle, tone: "bg-amber-100/60 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+  info_received: { label: "Información recibida", icon: MessageSquarePlus, tone: "bg-primary/10 text-primary" },
+  transferred: { label: "Trasladado por competencia", icon: Forward, tone: "bg-muted text-muted-foreground" },
+  annulled: { label: "Anulado", icon: Ban, tone: "bg-destructive/10 text-destructive" },
   assigned: { label: "Asignado", icon: UserCheck, tone: "bg-primary/10 text-primary" },
   note: { label: "Nota interna", icon: PenLine, tone: "bg-muted text-muted-foreground" },
   extended: { label: "Prórroga", icon: CalendarClock, tone: "bg-amber-100/60 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 
-import { CURRENT_USER } from "@/components/providers/ventanilla-provider";
+import { useVentanilla } from "@/components/providers/ventanilla-provider";
 import { RadicarForm } from "@/components/radicar/radicar-form";
 import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import type { Channel } from "@/lib/ventanilla/types";
 export default function NuevoRadicadoPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user, ready } = useVentanilla();
   const [channel, setChannel] = React.useState<Channel>("presencial");
 
   return (
@@ -34,7 +35,7 @@ export default function NuevoRadicadoPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(["presencial", "whatsapp"] as const).map((c) => (
+                {(["presencial", "telefonico", "whatsapp"] as const).map((c) => (
                   <SelectItem key={c} value={c}>
                     {CHANNEL_LABELS[c]}
                   </SelectItem>
@@ -42,14 +43,14 @@ export default function NuevoRadicadoPage() {
               </SelectContent>
             </Select>
           </div>
-          <RadicarForm
+          {ready ? <RadicarForm
             channel={channel}
-            onBehalfOf={CURRENT_USER.name}
+            onBehalfOf={user.name}
             onDone={(r) => {
               toast({ title: `Radicado ${r.number}`, description: "Acuse enviado al radicante." });
               router.push(`/ventanilla/${r.id}`);
             }}
-          />
+          /> : null}
         </CardContent>
       </Card>
     </div>

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardCheck, ExternalLink, GraduationCap, Inbox, Search, Send } from "lucide-react";
+import { BarChart3, ClipboardCheck, ExternalLink, GraduationCap, Inbox, ScrollText, Search, Send, Settings } from "lucide-react";
 
 import { useVentanilla } from "@/components/providers/ventanilla-provider";
 import { cn } from "@/lib/utils";
 import { isOpen, isPendingReview, SCHOOL } from "@/lib/ventanilla/rules";
+import { canManageConfig, canManageSurveys, canSee, canSeeAudit, canSeeReports, type DemoUser } from "@/lib/ventanilla/users";
 
 interface NavItem {
   href: string;
@@ -14,11 +15,23 @@ interface NavItem {
   icon: typeof Inbox;
   external?: boolean;
   match: (path: string) => boolean;
+  show?: (u: DemoUser) => boolean;
 }
 
+const SECTIONS = ["encuestas", "reportes", "bitacora", "configuracion"];
+
 const NAV: NavItem[] = [
-  { href: "/ventanilla", label: "Bandeja", icon: Inbox, match: (p) => p === "/ventanilla" || /^\/ventanilla\/(?!encuestas)/.test(p) },
-  { href: "/ventanilla/encuestas", label: "Encuestas", icon: ClipboardCheck, match: (p) => p.startsWith("/ventanilla/encuestas") },
+  {
+    href: "/ventanilla",
+    label: "Bandeja",
+    icon: Inbox,
+    match: (p) => p === "/ventanilla" || (p.startsWith("/ventanilla/") && !SECTIONS.some((s) => p.startsWith(`/ventanilla/${s}`))),
+    show: (u) => u.role !== "admin",
+  },
+  { href: "/ventanilla/encuestas", label: "Encuestas", icon: ClipboardCheck, match: (p) => p.startsWith("/ventanilla/encuestas"), show: canManageSurveys },
+  { href: "/ventanilla/reportes", label: "Reportes", icon: BarChart3, match: (p) => p.startsWith("/ventanilla/reportes"), show: canSeeReports },
+  { href: "/ventanilla/bitacora", label: "Bitácora", icon: ScrollText, match: (p) => p.startsWith("/ventanilla/bitacora"), show: canSeeAudit },
+  { href: "/ventanilla/configuracion", label: "Configuración", icon: Settings, match: (p) => p.startsWith("/ventanilla/configuracion"), show: canManageConfig },
 ];
 
 const PUBLIC_LINKS: NavItem[] = [
@@ -53,8 +66,8 @@ function NavLink({ item, active, badge }: { item: NavItem; active: boolean; badg
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state, ready } = useVentanilla();
-  const pending = ready ? state.radicados.filter((r) => isOpen(r) || isPendingReview(r)).length : 0;
+  const { state, ready, user } = useVentanilla();
+  const pending = ready ? state.radicados.filter((r) => canSee(user, r) && (isOpen(r) || isPendingReview(r))).length : 0;
 
   return (
     <aside className="flex flex-col gap-5 bg-sidebar px-3 py-4 text-sidebar-foreground lg:sticky lg:top-0 lg:h-dvh lg:w-sidebar lg:py-6">
@@ -70,7 +83,7 @@ export function AppSidebar() {
       </div>
       <nav aria-label="Ventanilla única" className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
         <p className="hidden px-3 pb-1 text-xs font-semibold uppercase tracking-wider opacity-70 lg:block">Gestión</p>
-        {NAV.map((item) => (
+        {NAV.filter((item) => !item.show || item.show(user)).map((item) => (
           <NavLink key={item.href} item={item} active={item.match(pathname)} badge={item.href === "/ventanilla" ? pending : undefined} />
         ))}
         <p className="hidden px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider opacity-70 lg:block">Ciudadanía</p>

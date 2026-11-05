@@ -112,10 +112,10 @@ export function bogotaParts(instant: Date): CivilDate & { hour: number } {
  * radicación; si se radica tras la hora de corte o en día no hábil, se
  * considera recibido el siguiente día hábil.
  */
-export function computeDueDate(radicatedAt: Date, businessDays: number): CivilDate {
+export function computeDueDate(radicatedAt: Date, businessDays: number, cutoffHour: number = CUTOFF_HOUR): CivilDate {
   const p = bogotaParts(radicatedAt);
   let received: CivilDate = { y: p.y, m: p.m, d: p.d };
-  if (!isBusinessDay(received) || p.hour >= CUTOFF_HOUR) {
+  if (!isBusinessDay(received) || p.hour >= cutoffHour) {
     do received = addDays(received, 1);
     while (!isBusinessDay(received));
   }
@@ -149,3 +149,10 @@ export const parseCivil = (key: string): CivilDate => {
   const [y, m, d] = key.split("-").map(Number);
   return { y, m, d };
 };
+
+/** Días hábiles transcurridos entre dos instantes (fecha civil de Bogotá). */
+export function businessDaysBetween(from: Date, to: Date): number {
+  const a = bogotaParts(from);
+  const b = bogotaParts(to);
+  return Math.max(0, businessDaysUntil({ y: b.y, m: b.m, d: b.d }, new Date(Date.UTC(a.y, a.m - 1, a.d, 17))));
+}

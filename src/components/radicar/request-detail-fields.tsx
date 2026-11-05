@@ -6,38 +6,39 @@ import { FormField } from "@/components/radicar/form-field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { AREAS, DOCUMENT_TYPES, PETITION_SUBTYPE_LABELS, PETITION_SUBTYPES } from "@/lib/ventanilla/types";
+import type { VentanillaConfig } from "@/lib/ventanilla/config";
+import { formatCivilDate } from "@/lib/ventanilla/rules";
+import { PERIODS, PETITION_SUBTYPE_LABELS, PETITION_SUBTYPES } from "@/lib/ventanilla/types";
 import type { RadicadoKind, RadicarFormValues } from "@/lib/ventanilla/types";
 
 interface RequestDetailFieldsProps {
   kind: RadicadoKind;
+  config: VentanillaConfig;
   control: Control<RadicarFormValues>;
   register: UseFormRegister<RadicarFormValues>;
   errors: FieldErrors<RadicarFormValues>;
 }
 
-function OptionSelect<T extends string>({
+function OptionSelect({
   id,
   value,
   onChange,
   options,
-  labels,
 }: {
   id: string;
-  value: T | undefined;
-  onChange: (v: T) => void;
-  options: readonly T[];
-  labels?: Record<T, string>;
+  value: string | undefined;
+  onChange: (v: string) => void;
+  options: ReadonlyArray<{ value: string; label: string }>;
 }) {
   return (
-    <Select value={value} onValueChange={(v) => onChange(v as T)}>
+    <Select value={value} onValueChange={onChange}>
       <SelectTrigger id={id}>
         <SelectValue placeholder="Selecciona…" />
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
-          <SelectItem key={o} value={o}>
-            {labels ? labels[o] : o}
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -45,19 +46,28 @@ function OptionSelect<T extends string>({
   );
 }
 
-export function RequestDetailFields({ kind, control, register, errors }: RequestDetailFieldsProps) {
+export function RequestDetailFields({ kind, config, control, register, errors }: RequestDetailFieldsProps) {
+  const isDoc = kind === "DOC";
+  const docOptions = config.documentTypes.map((d) => ({
+    value: d.name,
+    label: d.deadline ? `${d.name} · límite ${formatCivilDate(d.deadline)}` : d.name,
+  }));
+  const subtypeOptions = PETITION_SUBTYPES.map((s) => ({
+    value: s,
+    label: `${PETITION_SUBTYPE_LABELS[s]} (${config.terms[s]} días hábiles)`,
+  }));
+  const areaOptions = config.areas.map((a) => ({ value: a.name, label: a.name }));
+
   return (
     <fieldset className="space-y-4">
       <legend className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">Tu solicitud</legend>
       <div className="grid gap-4 sm:grid-cols-2">
-        {kind === "DOC" ? (
+        {isDoc ? (
           <FormField id="documentType" label="Tipo de documento" error={errors.documentType?.message}>
             <Controller
               control={control}
               name="documentType"
-              render={({ field }) => (
-                <OptionSelect id="documentType" value={field.value} onChange={field.onChange} options={DOCUMENT_TYPES} />
-              )}
+              render={({ field }) => <OptionSelect id="documentType" value={field.value} onChange={field.onChange} options={docOptions} />}
             />
           </FormField>
         ) : null}
@@ -67,25 +77,42 @@ export function RequestDetailFields({ kind, control, register, errors }: Request
               control={control}
               name="petitionSubtype"
               render={({ field }) => (
-                <OptionSelect
-                  id="petitionSubtype"
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={PETITION_SUBTYPES}
-                  labels={PETITION_SUBTYPE_LABELS}
-                />
+                <OptionSelect id="petitionSubtype" value={field.value} onChange={field.onChange} options={subtypeOptions} />
               )}
             />
           </FormField>
         ) : null}
-        <FormField id="area" label="Dirigido a">
+        <FormField id="area" label={isDoc ? "Destinatario" : "Área relacionada"} error={errors.area?.message}>
           <Controller
             control={control}
             name="area"
-            render={({ field }) => <OptionSelect id="area" value={field.value} onChange={field.onChange} options={AREAS} />}
+            render={({ field }) => <OptionSelect id="area" value={field.value} onChange={field.onChange} options={areaOptions} />}
           />
         </FormField>
       </div>
+      {isDoc ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FormField id="group" label="Grupo" hint="Opcional">
+            <Input id="group" placeholder="9°A" className="text-base sm:text-sm" {...register("group")} />
+          </FormField>
+          <FormField id="course" label="Asignatura" hint="Opcional">
+            <Input id="course" placeholder="Matemáticas" className="text-base sm:text-sm" {...register("course")} />
+          </FormField>
+          <FormField id="period" label="Periodo" hint="Opcional">
+            <Controller
+              control={control}
+              name="period"
+              render={({ field }) => (
+                <OptionSelect id="period" value={field.value} onChange={field.onChange} options={PERIODS.map((p) => ({ value: p, label: p }))} />
+              )}
+            />
+          </FormField>
+        </div>
+      ) : (
+        <FormField id="involved" label="Estudiante o grupo involucrado" hint="Opcional · solo lo ven quienes atienden el caso">
+          <Input id="involved" className="text-base sm:text-sm" {...register("involved")} />
+        </FormField>
+      )}
       <FormField id="subject" label="Asunto" error={errors.subject?.message}>
         <Input id="subject" className="text-base sm:text-sm" {...register("subject")} />
       </FormField>

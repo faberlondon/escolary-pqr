@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { deadlineLabel, deadlineState, type DeadlineState } from "@/lib/ventanilla/rules";
-import type { Radicado, RadicadoStatus } from "@/lib/ventanilla/types";
+import { STATUS_LABELS, type Radicado, type RadicadoStatus } from "@/lib/ventanilla/types";
 
 type Tone = "primary" | "success" | "warning" | "danger" | "muted";
 
@@ -13,18 +13,21 @@ const TONES: Record<Tone, string> = {
   muted: "bg-muted text-muted-foreground",
 };
 
-const STATUS: Record<RadicadoStatus, { label: string; tone: Tone }> = {
-  radicado: { label: "Radicado", tone: "primary" },
-  en_tramite: { label: "En trámite", tone: "primary" },
-  prorrogado: { label: "Prorrogado", tone: "warning" },
-  respondido: { label: "Respondido", tone: "success" },
-  cerrado: { label: "Cerrado", tone: "muted" },
-  recibido_conforme: { label: "Recibido conforme", tone: "success" },
-  devuelto: { label: "Devuelto", tone: "danger" },
-  anulado: { label: "Anulado", tone: "muted" },
+const STATUS_TONE: Record<RadicadoStatus, Tone> = {
+  radicado: "primary",
+  asignado: "primary",
+  en_tramite: "primary",
+  prorrogado: "warning",
+  en_espera: "warning",
+  trasladado: "muted",
+  respondido: "success",
+  cerrado: "muted",
+  recibido_conforme: "success",
+  devuelto: "danger",
+  anulado: "muted",
 };
 
-export const statusLabel = (s: RadicadoStatus): string => STATUS[s].label;
+export const statusLabel = (s: RadicadoStatus): string => STATUS_LABELS[s];
 
 export function Pill({ tone, children, className }: { tone: Tone; children: React.ReactNode; className?: string }) {
   return (
@@ -44,13 +47,13 @@ export function Pill({ tone, children, className }: { tone: Tone; children: Reac
 export function StatusBadge({ radicado, now }: { radicado: Radicado; now: Date }) {
   const overdue = deadlineState(radicado, now).state === "overdue";
   if (overdue) return <Pill tone="danger">Vencido</Pill>;
-  const s = STATUS[radicado.status];
-  return <Pill tone={s.tone}>{s.label}</Pill>;
+  return <Pill tone={STATUS_TONE[radicado.status]}>{STATUS_LABELS[radicado.status]}</Pill>;
 }
 
 const DEADLINE_TEXT: Record<DeadlineState, string> = {
   none: "text-muted-foreground",
   ok: "text-muted-foreground",
+  suspended: "text-amber-700 dark:text-amber-400",
   soon: "text-amber-700 dark:text-amber-400",
   today: "text-destructive dark:text-red-400",
   overdue: "text-destructive dark:text-red-400",

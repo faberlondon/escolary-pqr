@@ -5,7 +5,7 @@ import type { Radicado } from "./types";
 const PRIMARY: [number, number, number] = [31, 72, 199];
 
 /** Acuse de recibo en PDF (UC-ENC-04, paso 5). jsPDF se carga solo al descargar. */
-export async function downloadReceiptPdf(r: Radicado): Promise<void> {
+export async function downloadReceiptPdf(r: Radicado, ackTemplate?: string): Promise<void> {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const left = 20;
@@ -41,6 +41,10 @@ export async function downloadReceiptPdf(r: Radicado): Promise<void> {
     ["Asunto", r.subject],
     ["Respuesta a más tardar", r.dueAt ? `${formatCivilDate(r.dueAt)} (días hábiles, Ley 1755 de 2015)` : "No aplica"],
   ];
+  const context = [r.group, r.course, r.period].filter(Boolean).join(" · ");
+  if (context) rows.push(["Grupo / asignatura / periodo", context]);
+  if (r.linkedTo) rows.push(["Corrección del radicado", r.linkedTo]);
+  if (r.lateDelivery) rows.push(["Entrega", "Extemporánea (después de la fecha límite)"]);
   doc.setFontSize(10);
   for (const [label, value] of rows) {
     doc.setFont("helvetica", "bold");
@@ -68,6 +72,16 @@ export async function downloadReceiptPdf(r: Radicado): Promise<void> {
   }
   doc.text(`Huella del registro SHA-256 ${r.recordHash}`, left, (y += 2));
 
+  if (ackTemplate) {
+    const ack = ackTemplate
+      .replaceAll("{radicado}", r.number)
+      .replaceAll("{fecha}", formatDateTime(r.createdAt))
+      .replaceAll("{vence}", r.dueAt ? formatCivilDate(r.dueAt) : "no aplica");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text(doc.splitTextToSize(ack, 176) as string[], left, 236);
+  }
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(90, 90, 90);

@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -23,7 +24,10 @@ interface TextActionDialogProps {
   confirmLabel: string;
   minLength?: number;
   destructive?: boolean;
-  onConfirm: (text: string) => void;
+  /** Campo corto adicional obligatorio (p. ej. entidad destino de un traslado). */
+  inputLabel?: string;
+  inputPlaceholder?: string;
+  onConfirm: (text: string, input: string) => void;
 }
 
 /** Diálogo con un campo de texto obligatorio (motivo, nota, respuesta). */
@@ -35,19 +39,25 @@ export function TextActionDialog({
   confirmLabel,
   minLength = 5,
   destructive,
+  inputLabel,
+  inputPlaceholder,
   onConfirm,
 }: TextActionDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [text, setText] = React.useState("");
+  const [input, setInput] = React.useState("");
   const id = React.useId();
-  const valid = text.trim().length >= minLength;
+  const valid = text.trim().length >= minLength && (!inputLabel || input.trim().length >= 3);
 
   return (
     <Dialog
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
-        if (!o) setText("");
+        if (!o) {
+          setText("");
+          setInput("");
+        }
       }}
     >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -56,6 +66,12 @@ export function TextActionDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {inputLabel ? (
+          <div className="space-y-1.5">
+            <Label htmlFor={`${id}-input`}>{inputLabel}</Label>
+            <Input id={`${id}-input`} value={input} placeholder={inputPlaceholder} onChange={(e) => setInput(e.target.value)} />
+          </div>
+        ) : null}
         <div className="space-y-1.5">
           <Label htmlFor={id}>{label}</Label>
           <Textarea id={id} rows={4} value={text} onChange={(e) => setText(e.target.value)} />
@@ -69,9 +85,10 @@ export function TextActionDialog({
             variant={destructive ? "destructive" : "default"}
             disabled={!valid}
             onClick={() => {
-              onConfirm(text.trim());
+              onConfirm(text.trim(), input.trim());
               setOpen(false);
               setText("");
+              setInput("");
             }}
           >
             {confirmLabel}

@@ -68,7 +68,10 @@ export function RequesterFields({ kind, anonymous, control, register, errors }: 
         ) : null}
       </div>
       {!anonymous ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FormField id="documentId" label="Número de documento" error={errors.documentId?.message} hint="Con él consultas tu radicado">
+            <Input id="documentId" inputMode="numeric" className="text-base sm:text-sm" {...register("documentId")} />
+          </FormField>
           <FormField id="email" label="Correo para el acuse" error={errors.email?.message}>
             <Input id="email" type="email" autoComplete="email" className="text-base sm:text-sm" {...register("email")} />
           </FormField>
